@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <SDL.h>
+#include <SDL_image.h>
 
 //Screen Dimensions
 const int SCREEN_WIDTH = 1280;
@@ -23,19 +24,20 @@ Return null if texture fails to load
 Expects char* input for file location
 -----------------------------------*/
 SDL_Texture* loadMedia(const char* mediaLocation) {
-    // Load texture from file location
-    SDL_Surface* surface = SDL_LoadBMP(mediaLocation);
+    SDL_Surface* surface = IMG_Load(mediaLocation);
     if (surface == nullptr) {
-        printf("Unable to load image! SDL Error: %s\n", SDL_GetError());
+        printf("Unable to load image! SDL_image Error: %s\n", IMG_GetError());
         return nullptr;
     }
-    //Create texture pointer using renderer and free surface
+
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_FreeSurface(surface);
+
     if (texture == nullptr) {
         printf("Unable to create texture! SDL Error: %s\n", SDL_GetError());
         return nullptr;
     }
+
     return texture;
 }
 
@@ -92,15 +94,50 @@ void close() {
 int main() {
     //Sprite array for image paths
     const char* sprites[] = {
-        "path/to/player.bmp",
-        "path/to/enemy.bmp",
-        "path/to/line.bmp"
+        "Sprites/Player.png",
+        "Sprites/Enemy.png",
+        "Sprites/Player.png"
     };
 
     //Initialize SDL and Sprites
     if (!init(sprites)) {
         std::cerr << "Initialization failed!" << std::endl;
         return 1;
+    }
+
+    int playerWidth, playerHeight;
+    SDL_QueryTexture(player_texture, NULL, NULL, &playerWidth, &playerHeight);
+
+    // Set the initial position of the player
+    int playerX = SCREEN_WIDTH / 2 - playerWidth / 2;
+    int playerY = SCREEN_HEIGHT / 2 - playerHeight / 2;
+
+    // Game Loop
+    SDL_Event e;
+    bool quit = false;
+
+    while (!quit) {
+        // Event handling
+        while (SDL_PollEvent(&e) != 0) {
+            if (e.type == SDL_QUIT) {
+                quit = true;
+            }
+        }
+
+        // Your game logic goes here
+
+        // Clear the renderer
+        SDL_RenderClear(renderer);
+
+        // Render the player texture
+        SDL_Rect playerRect = { playerX, playerY, playerWidth, playerHeight };
+        SDL_RenderCopy(renderer, player_texture, NULL, &playerRect);
+
+        // Present the renderer
+        SDL_RenderPresent(renderer);
+
+        // Delay to control frame rate (adjust as needed)
+        SDL_Delay(16);  // 16 milliseconds for approximately 60 frames per second
     }
 
     close(); //Clean up pointers

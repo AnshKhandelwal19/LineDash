@@ -25,6 +25,16 @@ struct Coordinate {
     int y;
 };
 
+/*-------------------------------------------------------------------------------
+Velocity structure is used to tell the velocity of an entity in the game window
+Has two values: 
+    x-coordinate (horizontal velocity)
+    y-coordinate (vertical velocity)
+-------------------------------------------------------------------------------*/
+struct Velocity {
+    int x;
+    int y;
+};
 
 /*-----------------------------------------------------------------------
 Entity class is a derived class that initializes the coordinate structure
@@ -33,6 +43,7 @@ Implements common methods for enemies and player such as getters
 class Entity {
 
     Coordinate pos;
+    Velocity vel;
 
     public:
     //Set position coordinate with x,y input
@@ -46,6 +57,8 @@ class Entity {
     }
     //Get position coordinate
     Coordinate get_position() { return pos; }
+    Velocity get_velocity() { return vel; }
+    void set_velocity(int new_x, int new_y) { vel.x = new_x; vel.y = new_y; }
 
 };
 

@@ -12,19 +12,9 @@ class Player : public Entity {
 
     public:
     //Set new position based on input (up,down,left,right)
-    void move(std::string direction) {
+    void move(Velocity v) {
         Coordinate pos = get_position();
-        if (direction == "up")
-            pos.y++;
-        else if (direction == "down")
-            pos.y--;
-        else if (direction == "left")
-            pos.x--;
-        else if (direction == "right")
-            pos.x++;
-        else 
-            return;
-        set_position(pos);
+        set_position(pos.x + v.x, pos.y + v.y);
     }
 };
 

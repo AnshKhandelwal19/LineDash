@@ -54,6 +54,11 @@ bool init(const char* sprites[]) {
         printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return false;
     }
+    // Initialize SDL_image
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+        return false;
+    }
     // Create window
     window = SDL_CreateWindow("Line Jump", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (window == NULL) {
@@ -89,9 +94,12 @@ void close() {
     SDL_DestroyTexture(enemy_texture);
     SDL_DestroyTexture(line_texture);
     SDL_Quit();
+    IMG_Quit();
 }
 
 int main() {
+    Player player = Player();
+
     //Sprite array for image paths
     const char* sprites[] = {
         "Sprites/Player.png",
@@ -109,20 +117,46 @@ int main() {
     SDL_QueryTexture(player_texture, NULL, NULL, &playerWidth, &playerHeight);
 
     // Set the initial position of the player
-    int playerX = SCREEN_WIDTH / 2 - playerWidth / 2;
-    int playerY = SCREEN_HEIGHT / 2 - playerHeight / 2;
+    player.set_position(SCREEN_WIDTH / 2 - playerWidth / 2, SCREEN_HEIGHT / 2 - playerHeight / 2);
 
     // Game Loop
     SDL_Event e;
     bool quit = false;
 
     while (!quit) {
-        // Event handling
-        while (SDL_PollEvent(&e) != 0) {
-            if (e.type == SDL_QUIT) {
-                quit = true;
+            while (SDL_PollEvent(&e) != 0) {
+                if (e.type == SDL_QUIT) {
+                    quit = true;
+                } else if (e.type == SDL_KEYDOWN) {
+                    switch (e.key.keysym.sym) {
+                        case SDLK_w:
+                            player.set_velocity(0, -5);
+                            break;
+                        case SDLK_s:
+                            player.set_velocity(0, 5);
+                            break;
+                        case SDLK_a:
+                            player.set_velocity(-5, 0);
+                            break;
+                        case SDLK_d:
+                            player.set_velocity(5, 0);
+                            break;
+                    }
+                } else if (e.type == SDL_KEYUP) {
+                    switch (e.key.keysym.sym) {
+                        case SDLK_w:
+                        case SDLK_s:
+                            player.set_velocity(player.get_velocity().x, 0);
+                            break;
+                        case SDLK_a:
+                        case SDLK_d:
+                            player.set_velocity(0, player.get_velocity().y);
+                            break;
+                    }
+                }
             }
-        }
+        // Update player position based on velocity
+        player.move(player.get_velocity());
 
         // Your game logic goes here
 
@@ -130,7 +164,7 @@ int main() {
         SDL_RenderClear(renderer);
 
         // Render the player texture
-        SDL_Rect playerRect = { playerX, playerY, playerWidth, playerHeight };
+        SDL_Rect playerRect = { player.get_position().x, player.get_position().y, playerWidth, playerHeight };
         SDL_RenderCopy(renderer, player_texture, NULL, &playerRect);
 
         // Present the renderer

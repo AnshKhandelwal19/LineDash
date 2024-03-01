@@ -9,12 +9,9 @@ The player class implements methods for changing player position and implementin
 Inherits the Entity class
 -----------------------------------------------------------------------------------------*/
 class Player : public Entity {
-
     public:
-    //Set new position based on input (up,down,left,right)
-    void move(Velocity v) {
-        Coordinate pos = get_position();
-        set_position(pos.x + v.x, pos.y + v.y);
+    void jump(Velocity v) {
+        set_position(get_position().x + v.x, get_position().y + v.y);
     }
 };
 

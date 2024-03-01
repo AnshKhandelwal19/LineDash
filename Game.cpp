@@ -97,9 +97,15 @@ void close() {
     IMG_Quit();
 }
 
-int main() {
-    Player player = Player();
+bool hit_bound(Coordinate pos) {
+    if(pos.x <= 0 || pos.y <= 0)
+        return true;
+    else if(pos.x >= SCREEN_WIDTH || pos.y >= SCREEN_HEIGHT)
+        return true;
+    return false;
+}
 
+int main() {
     //Sprite array for image paths
     const char* sprites[] = {
         "Sprites/Player.png",
@@ -114,10 +120,19 @@ int main() {
     }
 
     int playerWidth, playerHeight;
+    int enemyWidth, enemyHeight;
     SDL_QueryTexture(player_texture, NULL, NULL, &playerWidth, &playerHeight);
+    SDL_QueryTexture(enemy_texture, NULL, NULL, &enemyWidth, &enemyHeight);
 
     // Set the initial position of the player
+    Player player = Player();
     player.set_position(SCREEN_WIDTH / 2 - playerWidth / 2, SCREEN_HEIGHT / 2 - playerHeight / 2);
+    std::cout << player.get_position().x << " " << player.get_position().y << std::endl;
+    //Initialize Enemies
+    Enemy enemies[4] = {Enemy(SCREEN_WIDTH, SCREEN_HEIGHT, 1), Enemy(SCREEN_WIDTH, SCREEN_HEIGHT, 2), Enemy(SCREEN_WIDTH, SCREEN_HEIGHT, 3), Enemy(SCREEN_WIDTH, SCREEN_HEIGHT, 4)};
+    for(int i = 0; i < 4; i++) {
+        enemies[i].set_velocity(player.get_position(), 10);
+    }
 
     // Game Loop
     SDL_Event e;
@@ -155,10 +170,15 @@ int main() {
                     }
                 }
             }
-        // Update player position based on velocity
+        // Update position based on velocity
         player.move(player.get_velocity());
-
-        // Your game logic goes here
+        for(int i = 0; i < 4; i++) {
+            enemies[i].move(enemies[i].get_velocity());
+            if(hit_bound(enemies[i].get_position())) {
+                enemies[i].set_position(SCREEN_HEIGHT, SCREEN_WIDTH);
+                enemies[i].set_velocity(player.get_position(), 10);
+            }
+        }
 
         // Clear the renderer
         SDL_RenderClear(renderer);
@@ -167,12 +187,20 @@ int main() {
         SDL_Rect playerRect = { player.get_position().x, player.get_position().y, playerWidth, playerHeight };
         SDL_RenderCopy(renderer, player_texture, NULL, &playerRect);
 
+        SDL_Rect enemyRect1 = { enemies[0].get_position().x, enemies[0].get_position().y, enemyWidth, enemyHeight};
+        SDL_RenderCopy(renderer, enemy_texture, NULL, &enemyRect1);
+        SDL_Rect enemyRect2 = { enemies[1].get_position().x, enemies[1].get_position().y, enemyWidth, enemyHeight};
+        SDL_RenderCopy(renderer, enemy_texture, NULL, &enemyRect2);
+        SDL_Rect enemyRect3 = { enemies[2].get_position().x, enemies[2].get_position().y, enemyWidth, enemyHeight};
+        SDL_RenderCopy(renderer, enemy_texture, NULL, &enemyRect3);
+        SDL_Rect enemyRect4 = { enemies[3].get_position().x, enemies[3].get_position().y, enemyWidth, enemyHeight};
+        SDL_RenderCopy(renderer, enemy_texture, NULL, &enemyRect4);
+        
         // Present the renderer
         SDL_RenderPresent(renderer);
 
         // Delay to control frame rate (adjust as needed)
         SDL_Delay(16);  // 16 milliseconds for approximately 60 frames per second
     }
-
     close(); //Clean up pointers
 }

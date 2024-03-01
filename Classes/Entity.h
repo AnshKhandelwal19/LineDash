@@ -44,6 +44,7 @@ class Entity {
 
     Coordinate pos;
     Velocity vel;
+    int velocity_magnitude;
 
     public:
     //Set position coordinate with x,y input
@@ -60,6 +61,10 @@ class Entity {
     Velocity get_velocity() { return vel; }
     void set_velocity(int new_x, int new_y) { vel.x = new_x; vel.y = new_y; }
 
+    void move(Velocity v) {
+        Coordinate pos = get_position();
+        set_position(pos.x + v.x, pos.y + v.y);
+    }
 };
 
 #endif
